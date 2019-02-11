@@ -17,10 +17,10 @@ url = os.environ.get('URL', 'amqp://{}:{}@{}/{}'
 params = pika.URLParameters(url)
 params.socket_timeout = 5
 
-# Connect to CloudAMQP
-logger.info("Connect to CloudAMQP...")
+logger.info("PIKA: Connect to server...")
 connection = pika.BlockingConnection(params)
-channel = connection.channel()  # start a channel
+logger.info("PIKA: Create channel...")
+channel = connection.channel()
 
 
 rmq_utils = rabbitmq_api_utils.RabbitmqAPIUtils(server_config['host'],
@@ -77,7 +77,7 @@ for key, value in queue_name_vhost.items():
             value, dead_letter_exchange, dead_letter_queue)
 
         logger.info(
-            "Set Messages TTL and Dead Letter Exchange policies for the queue {} in vhost {}...".format(key, value))
+            "Set default policies for the queue {} in vhost {}...".format(key, value))
         policy_response = rmq_utils.create_queue_policy(
             value, key, dead_letter_exchange, dead_letter_queue)
         logger.info("Policy code: {}".format(policy_response))

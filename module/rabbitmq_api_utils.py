@@ -73,18 +73,24 @@ class RabbitmqAPIUtils:
             self.user, self.password), data=json.dumps(data), headers=headers)
         return r
 
-    def create_queue_policy(self, vhost, queue, dlx, dlq):
+    def create_queue_policy(self, vhost, queue, policies_config):
         logger.info("Call RabbitMQ api...")
+
+        dead_letter_exchange = "{}.{}".format(policies_config['dead-letter-exchange'], vhost)
+        dead_letter_queue = "{}.{}".format(policies_config['dead-letter-routing-key'], queue)
+
         url_method = self.url
-        url_method += ('policies/{}/expiry-policy-{}'.format(vhost, queue))
+        url_method += ('policies/{}/default-policy-{}'.format(vhost, queue))
         logger.info("Set queue policy URL: {}".format(url_method))
         headers = {'Content-type': 'application/json'}
         data = {"pattern": "(^{})".format(queue),
-                "definition": {"message-ttl": 6000,
-                               "ha-mode": "all",
-                               "ha-sync-mode": "automatic",
-                               "dead-letter-exchange": dlx,
-                               "dead-letter-routing-key": dlq},
+                "definition": {"message-ttl": policies_config["message-ttl"],
+                               "dead-letter-exchange": dead_letter_exchange,
+                               "dead-letter-routing-key": dead_letter_queue,
+                               "max-length": policies_config["max-length"],
+                               "expires": policies_config["expires"],
+                               "ha-mode": policies_config["ha-mode"],
+                               "ha-sync-mode": policies_config["ha-sync-mode"]},
                 "priority": 10, "apply-to": "queues"}
         logger.info("Set queue policy DATA: {}".format(data))
         r = requests.put(url_method, auth=(self.user, self.password),

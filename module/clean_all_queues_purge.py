@@ -1,29 +1,19 @@
 import pika
 import os
 import logging
-import yaml
+import config_resolver
 import rabbitmq_api_utils
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-logger.info('Loading configurations....')
-with open("./config/config.yml", 'r') as ymlfile:
-    cfg = yaml.load(ymlfile)
+config = config_resolver.ConfigResolver(logger)
+server_config = config.load_server_config()
 
-rabbitmq = cfg['rabbitmq']
-host = rabbitmq['host']
-user = rabbitmq['user']
-password = rabbitmq['password']
-
-logger.info('host: {}'.format(host))
-logger.info('user: {}'.format(user))
-logger.info('password: {}'.format(password))
-
-# Parse CLODUAMQP_URL (fallback to localhost)
-logger.info("Parse CLODUAMQP_URL (fallback to localhost)...")
-url = os.environ.get(
-    'CLOUDAMQP_URL', 'amqp://{}:{}@{}/dqoyaazj'.format(user, password, host))
+logger.info("Parse URL...")
+url = os.environ.get('URL', 'amqp://{}:{}@{}/{}'
+                     .format(server_config['user'], server_config['password'],
+                             server_config['host'], server_config['vhost']))
 params = pika.URLParameters(url)
 params.socket_timeout = 5
 
@@ -33,7 +23,9 @@ connection = pika.BlockingConnection(params)
 channel = connection.channel()  # start a channel
 
 
-rmq_utils = rabbitmq_api_utils.RabbitmqAPIUtils(host, user, password)
+rmq_utils = rabbitmq_api_utils.RabbitmqAPIUtils(server_config['host'],
+                                                server_config['user'],
+                                                server_config['password'])
 
 all_queues = rmq_utils.get_all_queues()
 queues_to_clean = list(filter(

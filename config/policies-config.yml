@@ -1,0 +1,8 @@
+policies:
+    message-ttl: 60000 #1 minute
+    dead-letter-exchange: deadletter
+    dead-letter-routing-key: deadletter
+    max-length: 50
+    expires: 2419200000 #28 days
+    ha-mode: all
+    ha-sync-mode: automatic

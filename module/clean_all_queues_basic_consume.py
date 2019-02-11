@@ -23,7 +23,8 @@ connection = pika.BlockingConnection(params)
 logger.info("PIKA: Create channel...")
 channel = connection.channel()
 
-rmq_utils = rabbitmq_api_utils.RabbitmqAPIUtils(server_config['host'],
+rmq_utils = rabbitmq_api_utils.RabbitmqAPIUtils(server_config['protocol'],
+                                                server_config['host'],
                                                 server_config['user'],
                                                 server_config['password'])
 

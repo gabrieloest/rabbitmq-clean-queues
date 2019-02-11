@@ -6,7 +6,7 @@ The objective of this project is, given a RabbitMQ broker, read the queues and c
 The cleaning of queues can be done with two different scripts:
   * clean_all_queues_basic_consume.py - In this script, the messages are read and transferred to the dead letter queues. In this way, if it is necessary that the messages are retrieved, they can be read "dead letter queues".
   * clean_all_queues_purge.py - Unlike the previous script, in this script, the messages are deleted. we use the "purge" method, so it is not possible to retrieve the messages in the future.
-  
+
 ## How it works?
 1. Read all queues
 2. Filter queues that need a clean up
@@ -20,7 +20,7 @@ The cleaning of queues can be done with two different scripts:
 ## Default Policies
 The aim of the default policies, is to ensure that all the environments created, follow the best practices recognized for using RabbitMQ as a message broker. This policies will be set with a low priority, so they can be easily replaced.
 
-### message-ttl	
+### message-ttl
 **Description**: Message TTL can be set for a given queue by setting the message-ttl argument with a policy or by specifying the same argument at the time of queue declaration.
 
 A message that has been in the queue for longer than the configured TTL is said to be dead. Note that a message routed to multiple queues can die at different times, or not at all, in each queue in which it resides. The death of a message in one queue has no impact on the life of the same message in other queues.
@@ -31,7 +31,7 @@ The value of the TTL argument or policy must be a non-negative integer (0 <= n),
 
 **Value**: 60000 (1 minute)
 
-### dead-letter-exchange	
+### dead-letter-exchange
 **Description**: Messages from a queue can be "dead-lettered"; that is, republished to an exchange when any of the following events occur:
 
 - The message is negatively acknowledged by a consumer using basic.reject or basic.nack with requeue parameter set to false
@@ -42,17 +42,17 @@ Dead letter exchanges (DLXs) are normal exchanges. They can be any of the usual 
 
 **Value**: deadletter.{vhost name}
 
-### dead-letter-routing-key	
+### dead-letter-routing-key
 **Description**: Dead-lettered messages are routed to their dead letter exchange either:
 
-- with the routing key specified for the queue they were on; 
+- with the routing key specified for the queue they were on;
 - with the same routing keys they were originally published with.
 
 For example, if you publish a message to an exchange with routing key foo, and that message is dead-lettered, it will be published to its dead letter exchange with routing key foo. If the queue the message originally landed on had been declared with x-dead-letter-routing-key set to bar, then the message will be published to its dead letter exchange with routing key bar.
 
 **Value**: deadletter.{queue name}
 
-### max-length	
+### max-length
 **Description**: The maximum length of a queue can be limited to a set number of messages, or a set number of bytes (the total of all message body lengths, ignoring message properties and any overheads), or both.
 
 The default behaviour for RabbitMQ when a maximum queue length or size is set and the maximum is reached is to drop or dead-letter messages from the front of the queue (i.e. the oldest messages in the queue).
@@ -66,7 +66,7 @@ Expiry time can be set for a given queue by setting the x-expires argument to qu
 
 **Value**: 2419200000(28 days)
 
-### ha-mode	
+### ha-mode
 **Description**: By default, contents of a queue within a RabbitMQ cluster are located on a single node (the node on which the queue was declared). This is in contrast to exchanges and bindings, which can always be considered to be on all nodes. Queues can optionally be made mirrored across multiple nodes.
 
 Each mirrored queue consists of one master and one or more mirrors. The master is hosted on one node commonly referred as the master node. Each queue has its own master node. All operations for a given queue are first applied on the queue's master node and then propagated to mirrors. This involves enqueueing publishes, delivering messages to consumers, tracking acknowledgements from consumers and so on.
@@ -77,7 +77,7 @@ This setting is very conservative. Mirroring to a quorum (N/2 + 1) of cluster no
 
 **Value**: all
 
-### ha-sync-mode	
+### ha-sync-mode
 **Descritption**: While a queue is being synchronised, all other queue operations will be blocked. Depending on multiple factors, a queue might be blocked by synchronisation for many minutes or hours, and in extreme cases even days.
 
 automatic - a queue will automatically synchronise when a new mirror joins. It is worth reiterating that queue synchronisation is a blocking operation. If queues are small, or you have a fast network between RabbitMQ nodes and the ha-sync-batch-size was optimised, this is a good choice.
@@ -88,6 +88,7 @@ automatic - a queue will automatically synchronise when a new mirror joins. It i
 1. Create file `config/server-config.yml` with the following content:
 ```
 rabbitmq:
+  protocol:
   host:
   user:
   password:

@@ -27,10 +27,15 @@ rmq_utils = rabbitmq_api_utils.RabbitmqAPIUtils(server_config['host'],
                                                 server_config['user'],
                                                 server_config['password'])
 
+policies_config = config.load_policies_config()
+
 all_queues = rmq_utils.get_all_queues()
+
 queues_to_clean = list(filter(
-    lambda item: (item['consumers'] == 0 and "deadletter" not in item["name"]),
+    lambda item: (item['consumers'] == 0 and
+                  policies_config['dead-letter-routing-key'] not in item["name"]),
     all_queues.json()))
+
 queues_names = list(map(lambda item: item['name'], queues_to_clean))
 
 logger.info("Queues found: ")
@@ -44,7 +49,7 @@ queue_name_vhost = {
 
 for key in queue_name_vhost:
     logger.info(key)
-    dead_letter_exchange = "deadletter.{}".format(queue_name_vhost.get(key))
+    dead_letter_exchange = "{}.{}".format(policies_config['dead-letter-exchange'], queue_name_vhost.get(key))
 
     exists = rmq_utils.is_exchange_exists(
         queue_name_vhost.get(key), dead_letter_exchange)
@@ -59,8 +64,8 @@ for key, value in queue_name_vhost.items():
     logger.info("Purging messages from {} queue...".format(key))
     channel.queue_purge(queue=key)
 
-    dead_letter_exchange = "deadletter.{}".format(value)
-    dead_letter_queue = "deadletter.{}".format(key)
+    dead_letter_exchange = "{}.{}".format(policies_config['dead-letter-exchange'], value)
+    dead_letter_queue = "{}.{}".format(policies_config['dead-letter-routing-key'], key)
 
     exists_queue = rmq_utils.is_queue_exists(value, dead_letter_queue)
     if not exists_queue:

@@ -38,21 +38,13 @@ queues_to_clean = list(filter(
                   policies_config['dead-letter-routing-key'] not in item["name"]),
     all_queues.json()))
 
-queues_names = list(map(lambda item: item['name'], queues_to_clean))
-
-logger.info("Queues found: ")
-logger.info(queues_names)
-
-queue_name_vhost = dict((json["name"], json["vhost"])
+queue_name_vhost = dict((json["name"], json["vhost"].replace("/", "%2f"))
                         for json in queues_to_clean)
-logger.info(queue_name_vhost)
-queue_name_vhost = {
-    k: v for (k, v) in queue_name_vhost.items() if k in queues_names}
 
 for key in queue_name_vhost:
     logger.info(key)
     dead_letter_exchange = "{}.{}".format(policies_config['dead-letter-exchange'], queue_name_vhost.get(key))
-
+    logger.info('Checking if {} exists...'.format(dead_letter_exchange))
     if not rmq_utils.is_exchange_exists(queue_name_vhost.get(key), dead_letter_exchange):
         logger.info('Dead leter exchange does not exist in the vhost {}. '
                     'Creating...'.format(queue_name_vhost.get(key)))
@@ -77,7 +69,9 @@ class CountCallback(object):
             channel.stop_consuming()
 
 
-for key, value in queue_name_vhost.items():
+for queue in queues_to_clean:
+    key = queue['name']
+    value = queue['vhost'].replace("/", "%2f")
     dead_letter_exchange = "{}.{}".format(policies_config['dead-letter-exchange'], value)
     dead_letter_queue = "{}.{}".format(policies_config['dead-letter-routing-key'], key)
 
@@ -98,7 +92,7 @@ for key, value in queue_name_vhost.items():
         logger.info("Policy code: {}".format(policy_response))
 
     print('Processing queue {}'.format(key))
-    queue = channel.queue_declare(key)
+    queue = channel.queue_declare(key, durable=queue['durable'])
     message_count = queue.method.message_count
     logger.info("Check message count... total: {}".format(message_count))
     if(message_count > 0):

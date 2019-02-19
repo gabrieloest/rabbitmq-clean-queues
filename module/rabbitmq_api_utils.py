@@ -10,10 +10,10 @@ class RabbitmqAPIUtils:
 
     headers = {'Content-type': 'application/json'}
 
-    def __init__(self, protocol, host, user, password):
+    def __init__(self, protocol, host, port, user, password):
         self.user = user
         self.password = password
-        self.url = '{}://{}/api/'.format(protocol, host)
+        self.url = '{}://{}:{}/api/'.format(protocol, host, port)
 
     def get_all_queues(self):
         logger.info("Call RabbitMQ api... {}".format(self.url))

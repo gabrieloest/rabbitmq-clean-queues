@@ -19,6 +19,7 @@ class ConfigResolver:
             server_config = yaml.load(ymlfile)
 
         rabbitmq = server_config['rabbitmq']
+        rabbitmq['vhost'] = rabbitmq['vhost'].replace("/", "%2f")
         self.log_configurations(rabbitmq)
 
         return rabbitmq

@@ -25,6 +25,7 @@ channel = connection.channel()
 
 rmq_utils = rabbitmq_api_utils.RabbitmqAPIUtils(server_config['protocol'],
                                                 server_config['host'],
+                                                server_config['http-port'],
                                                 server_config['user'],
                                                 server_config['password'])
 
